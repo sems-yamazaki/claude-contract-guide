@@ -1,0 +1,2010 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Claude 契約判断ガイド｜API・アプリ別の選定基準</title>
+<style>
+  :root {
+    /* Color tokens — austere / industrial 業務系 */
+    --bg: #fafafa;
+    --bg-sub: #f3f1ec;
+    --surface: #ffffff;
+    --text: #1a1a1f;
+    --text-sub: #5a5a62;
+    --text-mute: #8a8a92;
+    --border: #d8d4cc;
+    --border-strong: #1a1a1f;
+    --pink: #d97757;
+    --pink-dark: #b85d3f;
+    --code-bg: #efece4;
+    /* Semantic */
+    --info: #3a5a78;
+    --info-bg: #eff3f7;
+    --warn: #8a6500;
+    --warn-bg: #f7f1de;
+    --ok: #2a6a3c;
+    --ok-bg: #ebf3ec;
+    --ng: #8a3024;
+    --ng-bg: #f5e8e5;
+
+    /* Spacing 4pt scale */
+    --s-1: 4px;
+    --s-2: 8px;
+    --s-3: 12px;
+    --s-4: 16px;
+    --s-5: 24px;
+    --s-6: 32px;
+    --s-7: 48px;
+    --s-8: 64px;
+    --s-9: 96px;
+
+    /* Typography */
+    --font-body: "Noto Sans JP", "Yu Gothic UI", "Meiryo", sans-serif;
+    --font-mono: "JetBrains Mono", "Cascadia Mono", "Consolas", monospace;
+  }
+  * { box-sizing: border-box; }
+  html { font-size: 17px; }
+  body {
+    font-family: var(--font-body);
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.8;
+    margin: 0;
+    padding: 0;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Layout — 左偏重 asymmetry */
+  .container {
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: var(--s-7) var(--s-7) var(--s-9);
+  }
+
+  /* Header */
+  header {
+    border-bottom: 1px solid var(--border-strong);
+    padding-bottom: var(--s-6);
+    margin-bottom: var(--s-8);
+  }
+  .doc-meta {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-mute);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin: 0 0 var(--s-3);
+  }
+  h1 {
+    font-size: 40px;
+    line-height: 1.25;
+    margin: 0 0 var(--s-3);
+    color: var(--text);
+    font-weight: 800;
+    letter-spacing: -0.015em;
+  }
+  h1 .sub-label {
+    display: block;
+    font-size: 18px;
+    color: var(--text-sub);
+    font-weight: 400;
+    margin-top: var(--s-2);
+    letter-spacing: 0;
+  }
+  .doc-info {
+    color: var(--text-sub);
+    font-size: 14px;
+    margin: var(--s-3) 0 0;
+  }
+
+  /* Section headings — 左罫線 + 大番号 */
+  section {
+    margin-top: var(--s-9);
+    position: relative;
+  }
+  h2 {
+    font-size: 32px;
+    line-height: 1.25;
+    color: var(--text);
+    margin: 0 0 var(--s-5);
+    padding-left: var(--s-5);
+    border-left: 6px solid var(--pink);
+    font-weight: 800;
+    display: flex;
+    align-items: baseline;
+    gap: var(--s-3);
+    letter-spacing: -0.015em;
+  }
+  h2 .sec-num {
+    font-family: var(--font-mono);
+    color: var(--pink-dark);
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    flex-shrink: 0;
+  }
+  h3 {
+    font-size: 20px;
+    margin: var(--s-6) 0 var(--s-3);
+    color: var(--text);
+    font-weight: 700;
+    text-transform: none;
+    letter-spacing: -0.005em;
+  }
+  h3::before {
+    content: "—";
+    margin-right: var(--s-2);
+    color: var(--pink);
+  }
+  h4 {
+    font-size: 16px;
+    margin: var(--s-4) 0 var(--s-2);
+    color: var(--text);
+    font-weight: 700;
+  }
+  p {
+    margin: var(--s-2) 0 var(--s-4);
+    font-size: 16px;
+    max-width: 75ch;
+  }
+
+  /* Lead paragraph */
+  .lead {
+    font-size: 17px;
+    color: var(--text-sub);
+    border-left: 2px solid var(--border);
+    padding: var(--s-2) var(--s-4) var(--s-2) var(--s-5);
+    margin: var(--s-4) 0 var(--s-6);
+    max-width: 80ch;
+    line-height: 1.85;
+    border-radius: 0 8px 8px 0;
+  }
+
+  /* Tables — 等幅数値・罫線 */
+  table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin: var(--s-4) 0 var(--s-5);
+    font-size: 15px;
+    border: 1px solid var(--border-strong);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  th, td {
+    border-bottom: 1px solid var(--border);
+    padding: var(--s-3) var(--s-4);
+    text-align: left;
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  th {
+    background: transparent;
+    color: var(--text);
+    font-weight: 700;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    border-bottom: 1px solid var(--border-strong);
+    padding: var(--s-2) var(--s-4);
+  }
+  td.num, th.num {
+    text-align: right;
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Status callouts */
+  .callout {
+    padding: var(--s-5) var(--s-5);
+    margin: var(--s-4) 0;
+    font-size: 15px;
+    border-left: 4px solid var(--border-strong);
+    background: var(--bg-sub);
+    border-radius: 0 10px 10px 0;
+  }
+  .callout.warn { border-color: var(--warn); background: var(--warn-bg); }
+  .callout.ok { border-color: var(--ok); background: var(--ok-bg); }
+  .callout.ng { border-color: var(--ng); background: var(--ng-bg); }
+  .callout.info { border-color: var(--info); background: var(--info-bg); }
+  .callout .label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    display: block;
+    margin-bottom: var(--s-2);
+  }
+  .callout.warn .label { color: var(--warn); }
+  .callout.ok .label { color: var(--ok); }
+  .callout.ng .label { color: var(--ng); }
+  .callout.info .label { color: var(--info); }
+  .callout p:last-child, .callout ul:last-child { margin-bottom: 0; }
+  .callout ul { padding-left: var(--s-4); margin: var(--s-2) 0; }
+
+  /* Code */
+  code {
+    background: var(--code-bg);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--text);
+    white-space: nowrap;
+  }
+
+  /* Glossary (details) */
+  .glossary {
+    background: var(--surface);
+    border: 2px solid var(--border);
+    padding: var(--s-5) var(--s-6);
+    margin: var(--s-5) 0;
+    border-radius: 12px;
+  }
+  .glossary summary {
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--text);
+    padding: var(--s-1) 0;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-family: var(--font-mono);
+  }
+  .glossary summary::before {
+    content: "[+]";
+    color: var(--pink-dark);
+    margin-right: var(--s-2);
+  }
+  .glossary[open] summary::before { content: "[−]"; }
+  .glossary-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--s-4) var(--s-5);
+    margin-top: var(--s-5);
+    padding-top: var(--s-5);
+    border-top: 1px solid var(--border);
+  }
+  .glossary-item h5 {
+    margin: 0 0 var(--s-1);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .glossary-item p {
+    margin: 0;
+    font-size: 13px;
+    color: var(--text-sub);
+    max-width: none;
+    line-height: 1.7;
+  }
+
+  /* Decision Tool — 明確な箱として認識 */
+  .tool {
+    margin: var(--s-5) 0 var(--s-7);
+    background: var(--surface);
+    border: 2px solid var(--border-strong);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  .tool-tabs {
+    display: flex;
+    border-bottom: 2px solid var(--border-strong);
+    background: var(--bg-sub);
+  }
+  .tool-tab {
+    flex: 1;
+    background: var(--bg-sub);
+    border: none;
+    border-right: 1px solid var(--border);
+    padding: var(--s-4) var(--s-5);
+    font-family: inherit;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text-sub);
+    cursor: pointer;
+    transition: color 180ms ease-out, background-color 180ms ease-out;
+    letter-spacing: 0.02em;
+    text-align: left;
+    position: relative;
+  }
+  .tool-tab:last-child { border-right: none; }
+  .tool-tab:hover {
+    color: var(--text);
+    background: var(--bg);
+  }
+  .tool-tab.active {
+    color: var(--text);
+    background: var(--pink);
+  }
+  .tool-tab.active .tab-num { color: var(--text); }
+  .tool-tab .tab-num {
+    font-family: var(--font-mono);
+    color: var(--pink-dark);
+    font-size: 12px;
+    margin-right: var(--s-2);
+    letter-spacing: 0.15em;
+  }
+  .tool-tab .tab-state {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text-mute);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-top: var(--s-1);
+  }
+  .tool-tab.active .tab-state { color: var(--text); }
+  .tool-tab:focus-visible {
+    outline: 2px solid var(--pink-dark);
+    outline-offset: -2px;
+  }
+  .tool-panel {
+    display: none;
+    padding: var(--s-6) var(--s-6);
+    background: var(--surface);
+  }
+  .tool-panel.active { display: block; }
+  .tool-intro {
+    font-size: 15px;
+    color: var(--text-sub);
+    margin: 0 0 var(--s-6);
+    padding: var(--s-3) var(--s-4);
+    background: var(--bg-sub);
+    border-left: 3px solid var(--pink);
+    border-radius: 0 6px 6px 0;
+  }
+
+  .question-block {
+    margin-bottom: var(--s-6);
+    padding-bottom: var(--s-5);
+    border-bottom: 1px solid var(--border);
+  }
+  .question-block:last-of-type {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+  .q-label {
+    display: block;
+    font-size: 17px;
+    font-weight: 700;
+    margin-bottom: var(--s-2);
+    color: var(--text);
+    line-height: 1.5;
+  }
+  .q-label .q-num {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--bg);
+    background: var(--text);
+    padding: 2px 10px;
+    border-radius: 4px;
+    letter-spacing: 0.1em;
+    margin-right: var(--s-3);
+    vertical-align: middle;
+  }
+  .q-hint {
+    display: block;
+    font-size: 14px;
+    color: var(--text-sub);
+    font-weight: 400;
+    margin: var(--s-2) 0 var(--s-4);
+    padding-left: 0;
+    max-width: 80ch;
+  }
+  .q-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: var(--s-3);
+  }
+  .q-btn {
+    background: var(--surface);
+    color: var(--text);
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    padding: var(--s-4) var(--s-4);
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    text-align: left;
+    line-height: 1.5;
+    transition: border-color 150ms ease-out, background-color 150ms ease-out, color 150ms ease-out;
+    min-height: 56px;
+  }
+  .q-btn:hover {
+    border-color: var(--text);
+    background: var(--bg-sub);
+  }
+  .q-btn:focus-visible {
+    outline: 2px solid var(--pink-dark);
+    outline-offset: 2px;
+  }
+  .q-btn.selected {
+    background: var(--pink);
+    color: #ffffff;
+    border-color: var(--pink-dark);
+  }
+  .q-btn .opt-label {
+    display: block;
+    font-weight: 700;
+    font-size: 15px;
+    margin-bottom: 4px;
+  }
+  .q-btn .opt-desc {
+    display: block;
+    font-size: 12px;
+    color: var(--text-sub);
+    font-weight: 400;
+    line-height: 1.5;
+  }
+  .q-btn.selected .opt-desc { color: rgba(255, 255, 255, 0.88); }
+
+  /* Result */
+  .result {
+    display: none;
+    margin: var(--s-7) calc(var(--s-6) * -1) calc(var(--s-6) * -1);
+    padding: var(--s-6) var(--s-6) var(--s-6);
+    background: var(--bg-sub);
+    border-top: 4px solid var(--pink);
+  }
+  .result.show { display: block; }
+  .result-tag {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: #ffffff;
+    background: var(--pink-dark);
+    padding: 4px 12px;
+    border-radius: 4px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: var(--s-3);
+    font-weight: 700;
+  }
+  .result-title {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--text);
+    margin: 0 0 var(--s-4);
+    line-height: 1.3;
+    letter-spacing: -0.01em;
+  }
+  .result-body {
+    font-size: 15px;
+    color: var(--text);
+    line-height: 1.8;
+  }
+  .result-body p { margin: var(--s-2) 0 var(--s-3); max-width: 80ch; }
+  .result-body ul {
+    padding-left: var(--s-4);
+    margin: var(--s-2) 0 var(--s-4);
+  }
+  .result-body li { margin-bottom: 6px; }
+  .result-cost {
+    display: block;
+    margin-top: var(--s-4);
+    padding: var(--s-4) var(--s-5);
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    border-radius: 8px;
+    font-family: var(--font-mono);
+    font-size: 15px;
+    color: var(--text);
+    font-weight: 700;
+  }
+  .result-cost::before {
+    content: "想定コスト";
+    color: var(--text-sub);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    display: block;
+    margin-bottom: var(--s-1);
+    font-weight: 700;
+  }
+
+  /* Subtle blockquote */
+  blockquote {
+    border-left: 2px solid var(--text-sub);
+    padding: var(--s-1) var(--s-4);
+    margin: var(--s-2) 0 var(--s-3);
+    color: var(--text-sub);
+    font-size: 13px;
+    font-style: normal;
+    font-family: var(--font-mono);
+  }
+  blockquote cite {
+    display: block;
+    margin-top: var(--s-1);
+    font-size: 11px;
+    color: var(--text-mute);
+    font-family: var(--font-body);
+  }
+
+  /* Checklist */
+  ul.checklist {
+    list-style: none;
+    padding-left: 0;
+    margin: var(--s-4) 0 var(--s-5);
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0 var(--s-5);
+    border-top: 1px solid var(--border);
+  }
+  ul.checklist li {
+    padding: var(--s-3) 0 var(--s-3) var(--s-5);
+    position: relative;
+    font-size: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  ul.checklist li::before {
+    content: "□";
+    position: absolute;
+    left: 0;
+    top: var(--s-3);
+    color: var(--pink-dark);
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 16px;
+  }
+
+  /* Flow steps — 統一番号付きフロー */
+  .flow {
+    margin: var(--s-4) 0 var(--s-6);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    background: var(--surface);
+  }
+  .flow-header {
+    padding: var(--s-3) var(--s-5);
+    background: var(--bg-sub);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--s-3);
+    flex-wrap: wrap;
+  }
+  .flow-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text);
+    margin: 0;
+  }
+  .flow-meta {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text-sub);
+    letter-spacing: 0.05em;
+  }
+  .flow-meta strong {
+    color: var(--pink-dark);
+    font-weight: 700;
+  }
+  ol.flow-steps {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    counter-reset: step;
+  }
+  ol.flow-steps li {
+    counter-increment: step;
+    padding: var(--s-4) var(--s-5);
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+    line-height: 1.7;
+  }
+  ol.flow-steps li:last-child { border-bottom: none; }
+  ol.flow-steps li .step-title {
+    display: block;
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--text);
+    margin-bottom: var(--s-2);
+  }
+  ol.flow-steps li .step-title::before {
+    content: "STEP " counter(step, decimal-leading-zero);
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 700;
+    color: #ffffff;
+    background: var(--pink);
+    padding: 3px 10px;
+    border-radius: 4px;
+    letter-spacing: 0.12em;
+    margin-right: var(--s-3);
+    vertical-align: middle;
+  }
+  ol.flow-steps li .step-desc {
+    display: block;
+    font-size: 13px;
+    color: var(--text-sub);
+    line-height: 1.75;
+    margin-left: 0;
+  }
+  ol.flow-steps li .step-meta {
+    display: inline-block;
+    margin-top: var(--s-2);
+    padding: 2px 10px;
+    background: var(--bg-sub);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-sub);
+    letter-spacing: 0.05em;
+  }
+
+  /* Figure (SVG diagram) */
+  .figure {
+    margin: var(--s-5) 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    padding: var(--s-5) 0;
+    text-align: center;
+  }
+  .figure svg {
+    max-width: 100%;
+    height: auto;
+  }
+  .figure-cap {
+    margin: var(--s-3) 0 0;
+    font-size: 12px;
+    color: var(--text-sub);
+    font-family: var(--font-mono);
+    letter-spacing: 0.05em;
+  }
+  .figure-cap::before {
+    content: "図 — ";
+    color: var(--pink-dark);
+  }
+
+  /* Tabs hint */
+  .tabs-hint {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text-mute);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: var(--s-3);
+  }
+
+  /* Two column layout for content blocks */
+  .col-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--s-5);
+    margin: var(--s-4) 0 var(--s-5);
+  }
+  .panel {
+    padding: var(--s-5);
+    border: 2px solid var(--border);
+    background: var(--surface);
+    border-radius: 10px;
+  }
+  .panel h4 {
+    margin-top: 0;
+    padding-bottom: var(--s-3);
+    border-bottom: 1px solid var(--border);
+    font-size: 17px;
+  }
+  .panel ul { padding-left: var(--s-4); margin: var(--s-3) 0; font-size: 14px; }
+  .panel ul li { margin-bottom: 4px; }
+  .panel .panel-note {
+    font-size: 13px;
+    color: var(--text-sub);
+    margin: var(--s-3) 0 var(--s-2);
+    padding-top: var(--s-3);
+    border-top: 1px dashed var(--border);
+  }
+
+  /* Links */
+  a {
+    color: var(--text);
+    text-decoration: none;
+    border-bottom: 1px solid var(--pink);
+  }
+  a:hover {
+    background: var(--pink);
+    color: var(--bg);
+  }
+  a:focus-visible {
+    outline: 2px solid var(--pink-dark);
+    outline-offset: 2px;
+  }
+
+  /* Sources — セクション出典 */
+  .sources {
+    margin: var(--s-6) 0 0;
+    padding: var(--s-4) var(--s-5);
+    background: var(--bg-sub);
+    border-left: 3px solid var(--border-strong);
+    border-radius: 0 8px 8px 0;
+    font-size: 12px;
+  }
+  .sources-label {
+    display: block;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--text-sub);
+    margin-bottom: var(--s-2);
+  }
+  .sources ul { list-style: none; padding: 0; margin: 0; }
+  .sources li {
+    margin-bottom: var(--s-1);
+    line-height: 1.6;
+    padding-left: var(--s-4);
+    position: relative;
+  }
+  .sources li::before {
+    content: "▸";
+    position: absolute;
+    left: 0;
+    color: var(--pink-dark);
+  }
+  .sources a { font-size: 12px; word-break: break-word; }
+  .sources .src-note { color: var(--text-mute); }
+
+  /* Footer */
+  .footer {
+    margin-top: var(--s-8);
+    padding: var(--s-5) var(--s-5);
+    background: var(--bg-sub);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 12px;
+    color: var(--text-mute);
+    line-height: 1.7;
+    font-family: var(--font-mono);
+  }
+  .footer p { margin: var(--s-1) 0; font-size: 12px; max-width: none; }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  /* Responsive */
+  @media (max-width: 1100px) {
+    .glossary-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 900px) {
+    .container { padding: var(--s-5) var(--s-4) var(--s-8); }
+    .glossary-grid { grid-template-columns: 1fr; }
+    .col-2 { grid-template-columns: 1fr; }
+    ul.checklist { grid-template-columns: 1fr; }
+    h1 { font-size: 30px; }
+    h2 { font-size: 24px; }
+    h3 { font-size: 18px; }
+    .tool-panel { padding: var(--s-4); }
+    .result { margin: var(--s-6) calc(var(--s-4) * -1) calc(var(--s-4) * -1); }
+  }
+  @media (max-width: 500px) {
+    .q-options { grid-template-columns: 1fr; }
+    .tool-tabs { flex-direction: column; }
+    .tool-tab { border-right: none; border-bottom: 1px solid var(--border); }
+  }
+  @media print {
+    body { background: #fff; }
+    .tool-tabs, .tool-panel:not(.active) { display: none; }
+    .tool-panel.active { display: block; }
+    a { color: var(--text); border: none; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+<p class="doc-meta">社内検討資料 — Document v2 — 2026-06-15</p>
+<h1>
+  Claude 契約判断ガイド
+  <span class="sub-label">API契約／アプリ契約の選定基準</span>
+</h1>
+<p class="doc-info">想定読者：Claude の法人利用を検討中の意思決定者・実務担当者</p>
+</header>
+
+<section id="overview">
+<h2><span class="sec-num">§01</span>本資料の構成</h2>
+<p class="lead">Claude の法人利用には「API契約」と「アプリ契約」の2種類が存在する。それぞれ用途・規模・顧客要件により契約方法が異なる。本資料は判定ツールに回答することで推奨ルートを自動表示する形式とし、初見者でも適切な選定に至れるよう構成した。</p>
+
+<details class="glossary">
+<summary>用語集</summary>
+<div class="glossary-grid">
+  <div class="glossary-item">
+    <h5>API</h5>
+    <p>プログラムから Claude を呼び出す仕組み。自社製品へのAI機能組み込み時に利用する。</p>
+  </div>
+  <div class="glossary-item">
+    <h5>アプリ（Claude.ai / Claude Code）</h5>
+    <p>Claude.ai＝ブラウザ経由のチャット。Claude Code＝コマンドライン経由の開発支援。人間が直接利用する側。</p>
+  </div>
+  <div class="glossary-item">
+    <h5>Self-serve（セルフサーブ）</h5>
+    <p>営業に連絡せず、Webでクレジットカード登録するだけで即日利用開始できる契約方式。Team・Enterprise の両方に self-serve 形態がある。</p>
+  </div>
+  <div class="glossary-item">
+    <h5>Enterprise（エンタープライズ）</h5>
+    <p>大規模・高度なセキュリティ要件向けの上位プラン。<strong>2026年2月以降、Web即日の「self-serve」と営業経由の「sales-assisted」の2形態</strong>に分かれる。席単価$20＋API従量課金。</p>
+  </div>
+  <div class="glossary-item">
+    <h5>Enterprise self-serve / sales-assisted</h5>
+    <p>self-serve＝Web即日契約でSCIM・監査ログ・Compliance APIまで利用可（クレカ/ACH・年払い）。sales-assisted＝営業経由で請求書払い・MSA・コミット割引・HIPAA・トライアルに対応。</p>
+  </div>
+  <div class="glossary-item">
+    <h5>Team プラン</h5>
+    <p>アプリ向けの法人プラン。<strong>5〜150席</strong>の範囲で契約可能。内部に Standard 席と Premium 席が存在する。SCIM・監査ログは非対応。</p>
+  </div>
+  <div class="glossary-item">
+    <h5>Standard 席 / Premium 席</h5>
+    <p>Team プラン内の席種。Standard＝チャット用（年払い月3,000円／月払い3,750円）／Premium＝開発者用（年払い月15,000円／月払い18,750円、Claude Code 利用可）。</p>
+  </div>
+  <div class="glossary-item">
+    <h5>PoC（ピーオーシー）</h5>
+    <p>Proof of Concept ＝ 本格導入前の小規模なお試し・技術検証。</p>
+  </div>
+  <div class="glossary-item">
+    <h5>SLA（エスエルエー）</h5>
+    <p>「99.9%以上稼働」のような稼働率保証契約。停止時には補償が発生する。</p>
+  </div>
+  <div class="glossary-item">
+    <h5>ZDR（ゼロデータリテンション）</h5>
+    <p>リクエストデータを Anthropic に一切保存しない契約オプション。機密情報を扱う際に必須。</p>
+  </div>
+  <div class="glossary-item">
+    <h5>BAA / HIPAA</h5>
+    <p>医療データを扱うための追加契約および米国法令。医療・保険・薬剤系の顧客で必須。</p>
+  </div>
+  <div class="glossary-item">
+    <h5>Tier（ティア）</h5>
+    <p>API利用上限の段階。累計利用額に応じて自動昇格する（Tier 1〜Tier 4）。</p>
+  </div>
+  <div class="glossary-item">
+    <h5>SCIM（スキム）</h5>
+    <p>入退社時にユーザーアカウントを自動で作成・削除する仕組み。Team では非対応で、Enterprise（self-serve / sales-assisted どちらでも可）が必要。</p>
+  </div>
+</div>
+</details>
+
+<div class="sources">
+<span class="sources-label">出典 / Sources</span>
+<ul>
+  <li><a href="https://claude.com/pricing/" target="_blank" rel="noopener">claude.com/pricing</a> — プラン体系・席種・料金の一次情報</li>
+  <li><a href="https://support.claude.com/en/articles/9797531-what-is-the-enterprise-plan" target="_blank" rel="noopener">support.claude.com — What is the Enterprise plan?</a> — Enterprise の定義・機能範囲</li>
+</ul>
+</div>
+</section>
+
+<section id="tool">
+<h2><span class="sec-num">§02</span>契約ルート判定ツール</h2>
+<p class="lead">API契約とアプリ契約は判定観点が異なるため、タブで分離している。双方に回答することで、それぞれの推奨ルートを把握できる。</p>
+
+<div class="tool">
+<p class="tabs-hint">タブ切替で API ／ アプリ それぞれの判定を実施</p>
+<div class="tool-tabs" role="tablist">
+  <button class="tool-tab active" data-panel="api" role="tab" aria-selected="true">
+    <span class="tab-num">TAB A</span>API契約の判定
+    <span class="tab-state">表示中</span>
+  </button>
+  <button class="tool-tab" data-panel="app" role="tab" aria-selected="false">
+    <span class="tab-num">TAB B</span>アプリ契約の判定
+    <span class="tab-state">クリックで開く</span>
+  </button>
+</div>
+
+<!-- API判定 -->
+<div class="tool-panel active" id="panel-api" role="tabpanel">
+<p class="tool-intro">自社製品・システムへ Claude を組み込む場合の判定。全8問。</p>
+
+<div class="question-block">
+  <span class="q-label"><span class="q-num">Q1</span>API の用途は？</span>
+  <span class="q-hint">Claude を呼び出した API の主要な利用形態を選択する。</span>
+  <div class="q-options">
+    <button class="q-btn" data-q="api1" data-val="internal">
+      <span class="opt-label">社内専用</span><span class="opt-desc">社内ツール開発・業務自動化など</span>
+    </button>
+    <button class="q-btn" data-q="api1" data-val="external">
+      <span class="opt-label">外販組込</span><span class="opt-desc">他社向け商品にAI機能を搭載</span>
+    </button>
+    <button class="q-btn" data-q="api1" data-val="both">
+      <span class="opt-label">両方</span><span class="opt-desc">社内利用と外販の両方</span>
+    </button>
+  </div>
+</div>
+
+<div class="question-block">
+  <span class="q-label"><span class="q-num">Q2</span>扱うデータの機密度は？</span>
+  <span class="q-hint">API に渡すプロンプト・データの中で最も機密性が高いものを基準とする。</span>
+  <div class="q-options">
+    <button class="q-btn" data-q="api2" data-val="low">
+      <span class="opt-label">公開情報レベル</span><span class="opt-desc">公開資料・一般情報のみ</span>
+    </button>
+    <button class="q-btn" data-q="api2" data-val="mid">
+      <span class="opt-label">業務情報</span><span class="opt-desc">取引データ・社内文書・営業情報</span>
+    </button>
+    <button class="q-btn" data-q="api2" data-val="high">
+      <span class="opt-label">機密情報</span><span class="opt-desc">個人情報・財務情報・契約書</span>
+    </button>
+    <button class="q-btn" data-q="api2" data-val="phi">
+      <span class="opt-label">医療情報（PHI）</span><span class="opt-desc">病歴・診断データなど</span>
+    </button>
+  </div>
+</div>
+
+<div class="question-block">
+  <span class="q-label"><span class="q-num">Q3</span>顧客に「○○%稼働」のような稼働保証（SLA）を契約で明示する？</span>
+  <span class="q-hint">「月99.9%稼働を保証・停止時は補償する」といった数値保証を顧客との契約書に明記するかどうか。社内専用の場合は「不要」を選択。</span>
+  <div class="q-options">
+    <button class="q-btn" data-q="api3" data-val="none">
+      <span class="opt-label">不要</span><span class="opt-desc">SLA記載なし・社内専用</span>
+    </button>
+    <button class="q-btn" data-q="api3" data-val="soft">
+      <span class="opt-label">努力義務のみ</span><span class="opt-desc">「努めます」程度・数値なし・補償なし</span>
+    </button>
+    <button class="q-btn" data-q="api3" data-val="strict">
+      <span class="opt-label">数値で明示する</span><span class="opt-desc">「99.x%稼働」を契約で約束・落ちたら補償</span>
+    </button>
+  </div>
+</div>
+
+<div class="question-block">
+  <span class="q-label"><span class="q-num">Q4</span>将来の顧客展開・拡大予定は？</span>
+  <span class="q-hint">現時点では小規模でも、将来的に対象となり得る顧客層を想定する。</span>
+  <div class="q-options">
+    <button class="q-btn" data-q="api4" data-val="sme">
+      <span class="opt-label">中小企業中心</span><span class="opt-desc">同業・地域企業向け</span>
+    </button>
+    <button class="q-btn" data-q="api4" data-val="enterprise">
+      <span class="opt-label">大企業展開</span><span class="opt-desc">上場企業・大手取引先</span>
+    </button>
+    <button class="q-btn" data-q="api4" data-val="regulated">
+      <span class="opt-label">規制業種展開</span><span class="opt-desc">金融・医療・自治体・公共</span>
+    </button>
+  </div>
+</div>
+
+<div class="question-block">
+  <span class="q-label"><span class="q-num">Q5</span>月のAPI利用見込みは？</span>
+  <span class="q-hint">本番運用が安定した後の想定額。導入初期は小規模でも問題なし。</span>
+  <div class="q-options">
+    <button class="q-btn" data-q="api5" data-val="xs">
+      <span class="opt-label">月15万円以下</span><span class="opt-desc">PoC・小規模利用</span>
+    </button>
+    <button class="q-btn" data-q="api5" data-val="s">
+      <span class="opt-label">月15〜150万円</span><span class="opt-desc">中規模本番運用</span>
+    </button>
+    <button class="q-btn" data-q="api5" data-val="m">
+      <span class="opt-label">月150万円超</span><span class="opt-desc">大規模・複数顧客展開</span>
+    </button>
+  </div>
+</div>
+
+<div class="question-block">
+  <span class="q-label"><span class="q-num">Q6</span>エンドユーザー（最終的に AI 応答に触れる人）の規模は？</span>
+  <span class="q-hint">外販なら顧客側の利用人数の見込み。</span>
+  <div class="q-options">
+    <button class="q-btn" data-q="api6" data-val="few">
+      <span class="opt-label">少数（〜数百人）</span><span class="opt-desc">特定顧客の社内利用</span>
+    </button>
+    <button class="q-btn" data-q="api6" data-val="mid">
+      <span class="opt-label">中規模（数百〜数千人）</span><span class="opt-desc">複数顧客への展開</span>
+    </button>
+    <button class="q-btn" data-q="api6" data-val="mass">
+      <span class="opt-label">大規模（数千人〜）</span><span class="opt-desc">広範な BtoB / BtoC 展開</span>
+    </button>
+  </div>
+</div>
+
+<div class="question-block">
+  <span class="q-label"><span class="q-num">Q7</span>AI 機能の業務クリティカル度は？</span>
+  <span class="q-hint">AI が誤応答・停止した時の業務影響度。</span>
+  <div class="q-options">
+    <button class="q-btn" data-q="api7" data-val="aux">
+      <span class="opt-label">補助機能</span><span class="opt-desc">AIが止まっても本業務は回る</span>
+    </button>
+    <button class="q-btn" data-q="api7" data-val="core">
+      <span class="opt-label">主要機能</span><span class="opt-desc">AIが止まると業務効率に影響</span>
+    </button>
+    <button class="q-btn" data-q="api7" data-val="critical">
+      <span class="opt-label">基幹機能</span><span class="opt-desc">AIが止まると業務停止</span>
+    </button>
+  </div>
+</div>
+
+<div class="question-block">
+  <span class="q-label"><span class="q-num">Q8</span>既存の AWS / GCP 契約は？</span>
+  <span class="q-hint">AWS Bedrock や GCP Vertex AI 経由で Claude を利用するルートが存在する。</span>
+  <div class="q-options">
+    <button class="q-btn" data-q="api8" data-val="none">
+      <span class="opt-label">なし</span><span class="opt-desc">クラウド契約なし or 別クラウド</span>
+    </button>
+    <button class="q-btn" data-q="api8" data-val="aws">
+      <span class="opt-label">AWS あり</span><span class="opt-desc">Bedrock 経由ルート選択肢あり</span>
+    </button>
+    <button class="q-btn" data-q="api8" data-val="gcp">
+      <span class="opt-label">GCP あり</span><span class="opt-desc">Vertex AI 経由ルート選択肢あり</span>
+    </button>
+    <button class="q-btn" data-q="api8" data-val="both">
+      <span class="opt-label">両方あり</span><span class="opt-desc">どちらも経由ルート利用可能</span>
+    </button>
+  </div>
+</div>
+
+<div id="result-api" class="result">
+  <span class="result-tag" id="result-api-tag"></span>
+  <div class="result-title" id="result-api-title"></div>
+  <div class="result-body" id="result-api-body"></div>
+</div>
+</div><!-- /panel-api -->
+
+<!-- アプリ判定 -->
+<div class="tool-panel" id="panel-app" role="tabpanel">
+<p class="tool-intro">社員が Claude.ai／Claude Code を直接利用する場合の判定。全8問。</p>
+
+<div class="question-block">
+  <span class="q-label"><span class="q-num">Q1</span>使う人数は？</span>
+  <span class="q-hint">開発者＋一般利用者の合計人数。</span>
+  <div class="q-options">
+    <button class="q-btn" data-q="app1" data-val="solo">
+      <span class="opt-label">1〜4名</span><span class="opt-desc">個人〜小規模チーム</span>
+    </button>
+    <button class="q-btn" data-q="app1" data-val="team">
+      <span class="opt-label">5〜150名</span><span class="opt-desc">Team プランの範囲内</span>
+    </button>
+    <button class="q-btn" data-q="app1" data-val="large">
+      <span class="opt-label">150名超 <span style="font-size: 10px; opacity: 0.75;">（Team上限超・Enterprise必要）</span></span><span class="opt-desc">全社・大規模展開</span>
+    </button>
+  </div>
+</div>
+
+<div class="question-block">
+  <span class="q-label"><span class="q-num">Q2</span>Claude Code を使う開発者は存在するか？</span>
+  <span class="q-hint">Claude Code はコマンドラインで開発支援するツール。Premium 席が必要となる。</span>
+  <div class="q-options">
+    <button class="q-btn" data-q="app2" data-val="no">
+      <span class="opt-label">いない</span><span class="opt-desc">チャット利用のみ</span>
+    </button>
+    <button class="q-btn" data-q="app2" data-val="few">
+      <span class="opt-label">1〜5名程度</span><span class="opt-desc">開発者の一部</span>
+    </button>
+    <button class="q-btn" data-q="app2" data-val="many">
+      <span class="opt-label">大勢いる</span><span class="opt-desc">開発組織全体</span>
+    </button>
+  </div>
+</div>
+
+<div class="question-block">
+  <span class="q-label"><span class="q-num">Q3</span>SSO（シングルサインオン）の要件は？</span>
+  <span class="q-hint">Google Workspace や Azure AD によるログイン統一の要否。</span>
+  <div class="q-options">
+    <button class="q-btn" data-q="app3" data-val="none">
+      <span class="opt-label">不要</span><span class="opt-desc">個別パスワード管理で可</span>
+    </button>
+    <button class="q-btn" data-q="app3" data-val="sso">
+      <span class="opt-label">SSO だけ必要</span><span class="opt-desc">入退社の自動連携は手動で可</span>
+    </button>
+    <button class="q-btn" data-q="app3" data-val="scim">
+      <span class="opt-label">SCIM 自動連携必要 <span style="font-size: 10px; opacity: 0.75;">（Enterprise 必要・Web契約可）</span></span><span class="opt-desc">入退社時に自動でアカウント作成・削除</span>
+    </button>
+  </div>
+</div>
+
+<div class="question-block">
+  <span class="q-label"><span class="q-num">Q4</span>支払い方法の要件は？</span>
+  <span class="q-hint">経理部門の要件により決定されるケースが多い。</span>
+  <div class="q-options">
+    <button class="q-btn" data-q="app4" data-val="card">
+      <span class="opt-label">クレジットカード可</span><span class="opt-desc">法人カードで決済</span>
+    </button>
+    <button class="q-btn" data-q="app4" data-val="invoice">
+      <span class="opt-label">請求書払い必須 <span style="font-size: 10px; opacity: 0.75;">（営業経由が必要）</span></span><span class="opt-desc">月次請求書・銀行振込</span>
+    </button>
+  </div>
+</div>
+
+<div class="question-block">
+  <span class="q-label"><span class="q-num">Q5</span>HIPAA・BAA は必要か？</span>
+  <span class="q-hint">医療情報を Claude に入力する可能性があるなら必要。</span>
+  <div class="q-options">
+    <button class="q-btn" data-q="app5" data-val="no">
+      <span class="opt-label">不要</span><span class="opt-desc">医療系業務なし</span>
+    </button>
+    <button class="q-btn" data-q="app5" data-val="yes">
+      <span class="opt-label">必要 <span style="font-size: 10px; opacity: 0.75;">（営業経由が必要）</span></span><span class="opt-desc">医療・保険系業務あり</span>
+    </button>
+  </div>
+</div>
+
+<div class="question-block">
+  <span class="q-label"><span class="q-num">Q6</span>利用者が Claude に入力するデータの機密度は？</span>
+  <span class="q-hint">想定される最高機密レベル。</span>
+  <div class="q-options">
+    <button class="q-btn" data-q="app6" data-val="low">
+      <span class="opt-label">公開情報レベル</span><span class="opt-desc">一般情報・公開資料のみ</span>
+    </button>
+    <button class="q-btn" data-q="app6" data-val="mid">
+      <span class="opt-label">業務情報</span><span class="opt-desc">社内文書・顧客情報・営業情報</span>
+    </button>
+    <button class="q-btn" data-q="app6" data-val="high">
+      <span class="opt-label">機密情報 <span style="font-size: 10px; opacity: 0.75;">（Enterprise 推奨・Web契約可）</span></span><span class="opt-desc">個人情報・財務情報・契約書</span>
+    </button>
+  </div>
+</div>
+
+<div class="question-block">
+  <span class="q-label"><span class="q-num">Q7</span>監査ログ・利用履歴の保管は必要か？</span>
+  <span class="q-hint">ISMS・社内コンプライアンスで誰がいつ何を入力したか追跡が必要かどうか。</span>
+  <div class="q-options">
+    <button class="q-btn" data-q="app7" data-val="no">
+      <span class="opt-label">不要</span><span class="opt-desc">特に監査要件なし</span>
+    </button>
+    <button class="q-btn" data-q="app7" data-val="basic">
+      <span class="opt-label">基本ログで可</span><span class="opt-desc">利用者・期間がわかれば十分</span>
+    </button>
+    <button class="q-btn" data-q="app7" data-val="full">
+      <span class="opt-label">フル監査ログ必須 <span style="font-size: 10px; opacity: 0.75;">（Enterprise 必要・Web契約可）</span></span><span class="opt-desc">入力内容・出力内容まで保管</span>
+    </button>
+  </div>
+</div>
+
+<div class="question-block">
+  <span class="q-label"><span class="q-num">Q8</span>導入時期・スピード感は？</span>
+  <span class="q-hint">いつから使い始めたいか。</span>
+  <div class="q-options">
+    <button class="q-btn" data-q="app8" data-val="now">
+      <span class="opt-label">今すぐ（今週中）</span><span class="opt-desc">即日〜数日で開始したい</span>
+    </button>
+    <button class="q-btn" data-q="app8" data-val="month">
+      <span class="opt-label">1ヶ月以内</span><span class="opt-desc">準備期間あり</span>
+    </button>
+    <button class="q-btn" data-q="app8" data-val="quarter">
+      <span class="opt-label">2〜3ヶ月後で可</span><span class="opt-desc">じっくり契約準備可</span>
+    </button>
+  </div>
+</div>
+
+<div id="result-app" class="result">
+  <span class="result-tag" id="result-app-tag"></span>
+  <div class="result-title" id="result-app-title"></div>
+  <div class="result-body" id="result-app-body"></div>
+</div>
+</div><!-- /panel-app -->
+
+</div><!-- /tool -->
+
+<script>
+document.querySelectorAll('.tool-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    const panel = tab.dataset.panel;
+    document.querySelectorAll('.tool-tab').forEach(t => {
+      t.classList.remove('active');
+      t.setAttribute('aria-selected', 'false');
+      const state = t.querySelector('.tab-state');
+      if (state) state.textContent = 'クリックで開く';
+    });
+    document.querySelectorAll('.tool-panel').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    tab.setAttribute('aria-selected', 'true');
+    const activeState = tab.querySelector('.tab-state');
+    if (activeState) activeState.textContent = '表示中';
+    document.getElementById('panel-' + panel).classList.add('active');
+  });
+});
+
+const answers = {
+  api: { 1: null, 2: null, 3: null, 4: null, 5: null, 6: null, 7: null, 8: null },
+  app: { 1: null, 2: null, 3: null, 4: null, 5: null, 6: null, 7: null, 8: null }
+};
+
+document.querySelectorAll('.q-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const q = btn.dataset.q;
+    const val = btn.dataset.val;
+    const type = q.substring(0, 3);
+    const num = q.substring(3);
+    document.querySelectorAll(`.q-btn[data-q="${q}"]`).forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    answers[type][num] = val;
+    if (type === 'api' && allAnswered('api')) showApiResult();
+    if (type === 'app' && allAnswered('app')) showAppResult();
+  });
+});
+
+function allAnswered(type) {
+  return [1,2,3,4,5,6,7,8].every(n => answers[type][n] !== null);
+}
+
+const API_LABELS = {
+  1: { internal: '社内専用', external: '外販組込', both: '社内＋外販両方' },
+  2: { low: '公開情報レベル', mid: '業務情報', high: '機密情報', phi: '医療情報（PHI）' },
+  3: { none: 'SLA不要', soft: 'ゆるめのSLA', strict: '数値保証SLA' },
+  4: { sme: '中小企業中心', enterprise: '大企業展開', regulated: '規制業種（金融・医療・自治体）展開' },
+  5: { xs: '月15万円以下', s: '月15〜150万円', m: '月150万円超' },
+  6: { few: 'エンドユーザー数百人規模', mid: '数百〜数千人規模', mass: '数千人〜大規模' },
+  7: { aux: '補助機能', core: '主要機能', critical: '基幹機能' },
+  8: { none: 'AWS/GCP 契約なし', aws: 'AWS 既存契約あり', gcp: 'GCP 既存契約あり', both: 'AWS/GCP 両方あり' }
+};
+
+function showApiResult() {
+  const a = answers.api;
+  const r = document.getElementById('result-api');
+  const tag = document.getElementById('result-api-tag');
+  const t = document.getElementById('result-api-title');
+  const b = document.getElementById('result-api-body');
+  r.classList.add('show');
+
+  let score = 0;
+  const reasons = [];
+
+  if (a[1] === 'external') { score += 3; reasons.push(`<strong>用途＝外販組込</strong>：顧客要件（SLA・データ取扱）が発生する前提で進める必要がある`); }
+  else if (a[1] === 'both') { score += 3; reasons.push(`<strong>用途＝社内＋外販</strong>：外販部分が営業ルートの判断軸を引き上げる`); }
+  else { reasons.push(`<strong>用途＝社内専用</strong>：顧客要件は発生しないため、規模・機密度を基準に判断`); }
+
+  if (a[2] === 'phi') { score += 6; reasons.push(`<strong>機密度＝PHI</strong>：BAA 契約必須 → Self-serve では絶対不可`); }
+  else if (a[2] === 'high') { score += 5; reasons.push(`<strong>機密度＝機密情報</strong>：ZDR 契約必須（標準30日保持では顧客への説明責任を果たせない）`); }
+  else if (a[2] === 'mid') { score += 2; reasons.push(`<strong>機密度＝業務情報</strong>：ZDR検討を推奨。顧客契約に保持期間を明記することが望ましい`); }
+  else { reasons.push(`<strong>機密度＝公開情報レベル</strong>：標準30日保持で問題なし`); }
+
+  if (a[3] === 'strict') { score += 4; reasons.push(`<strong>SLA＝数値保証</strong>：Self-serve は SLA 提供なし → Enterprise で交渉必須`); }
+  else if (a[3] === 'soft') { score += 1; reasons.push(`<strong>SLA＝ゆるめ</strong>：ベストエフォート明記で Self-serve 可能`); }
+  else { reasons.push(`<strong>SLA＝不要</strong>：契約面の制約なし`); }
+
+  if (a[4] === 'regulated') { score += 4; reasons.push(`<strong>展開＝規制業種</strong>：将来 ZDR/BAA 要求が必ず来る → 最初から Enterprise 推奨`); }
+  else if (a[4] === 'enterprise') { score += 3; reasons.push(`<strong>展開＝大企業</strong>：上場企業は SLA・請求書払い・調達要件あり`); }
+  else { reasons.push(`<strong>展開＝中小企業中心</strong>：要件は比較的ゆるい想定`); }
+
+  if (a[5] === 'm') { score += 3; reasons.push(`<strong>規模＝月150万円超</strong>：Enterprise の割引メリット（10〜36% off）が効く`); }
+  else if (a[5] === 's') { score += 1; reasons.push(`<strong>規模＝月15〜150万円</strong>：Self-serve Tier 4 で対応可、ただし上限が近い`); }
+  else { reasons.push(`<strong>規模＝月15万円以下</strong>：Self-serve Tier 1〜3 で十分`); }
+
+  if (a[6] === 'mass') { score += 2; reasons.push(`<strong>EU規模＝数千人〜</strong>：Rate Limit が問題になる可能性大、Tier 4 超え検討`); }
+  else if (a[6] === 'mid') { score += 1; reasons.push(`<strong>EU規模＝数百〜数千</strong>：Self-serve でも初期は対応可だが拡大注意`); }
+  else { reasons.push(`<strong>EU規模＝数百人以下</strong>：Rate Limit 問題は当面なし`); }
+
+  if (a[7] === 'critical') { score += 3; reasons.push(`<strong>重要度＝基幹</strong>：SLA・サポート保証が事業継続に直結 → Enterprise 必須レベル`); }
+  else if (a[7] === 'core') { score += 1; reasons.push(`<strong>重要度＝主要機能</strong>：停止時の影響中。SLA 検討推奨`); }
+  else { reasons.push(`<strong>重要度＝補助</strong>：停止時の影響軽微`); }
+
+  let alternativeRoute = '';
+  if (a[8] === 'aws') alternativeRoute = `<li><strong>代替ルート：AWS Bedrock 経由</strong>（既存AWS契約に統合可能・国内リセラー6社あり）も検討候補</li>`;
+  else if (a[8] === 'gcp') alternativeRoute = `<li><strong>代替ルート：GCP Vertex AI 経由</strong>（既存GCP契約に統合可能）も検討候補</li>`;
+  else if (a[8] === 'both') alternativeRoute = `<li><strong>代替ルート：AWS Bedrock または GCP Vertex AI</strong> どちらも統合可。社内稟議の通りやすさで選択</li>`;
+
+  let costEstimate = '';
+  if (a[5] === 'xs') costEstimate = `月15万円以下（従量課金・Self-serve Tier 1〜3）`;
+  else if (a[5] === 's') {
+    if (score >= 9) costEstimate = `月15〜150万円（Enterprise 割引 10〜15% off で実効 12.75〜127.5万円）`;
+    else costEstimate = `月15〜150万円（Self-serve Tier 4 対応・本番投入前に Tier 4 まで上げておく）`;
+  } else costEstimate = `月150万円超（Enterprise 割引 10〜36% off 適用可・コミット枠次第）`;
+
+  const route = (a[8] === 'aws' || a[8] === 'gcp' || a[8] === 'both') ? 'cloud' : 'direct';
+  let routeNote = '';
+  if (route === 'cloud' && score >= 5) {
+    routeNote = `<li>既存クラウド契約あり → <strong>Bedrock / Vertex AI 経由ルートも並行検討</strong>（既存クラウド契約への統合により、社内稟議の通過が容易となる）</li>`;
+  }
+
+  if (score >= 12) {
+    tag.textContent = '判定 A — Enterprise（必須）';
+    t.textContent = 'Enterprise 営業ルートが必須';
+    b.innerHTML = `
+      <p>ご回答内容（${formatAnswers('api', a)}）から、<strong>Self-serve では対応不可能な要件</strong>が含まれる。Enterprise 営業ルートを前提として進める必要がある。</p>
+      <p><strong>判定根拠：</strong></p>
+      <ul>${reasons.map(x => `<li>${x}</li>`).join('')}</ul>
+      <p><strong>推奨アクション：</strong></p>
+      <ul>
+        <li><a href="https://claude.com/contact-sales" target="_blank" rel="noopener">claude.com/contact-sales</a> より問い合わせを送付 <span style="color: var(--text-sub); font-size: 13px;">（電話受付なし・フォーム経由のみ）</span></li>
+        <li>必要な追加契約書（${a[2] === 'phi' ? 'BAA / ' : ''}${a[2] === 'high' || a[2] === 'mid' ? 'ZDR / ' : ''}DPA）を要件として明記</li>
+        ${a[3] === 'strict' ? '<li>SLA 数値保証（99.x% 稼働）の交渉を行う</li>' : ''}
+        <li>PoC は <a href="https://console.anthropic.com/" target="_blank" rel="noopener">console.anthropic.com</a> にて並行実施可能（営業契約締結までのリードタイムを有効活用）</li>
+        ${alternativeRoute}
+        ${routeNote}
+      </ul>
+      <div class="result-cost">${costEstimate}</div>
+    `;
+  } else if (score >= 6) {
+    tag.textContent = '判定 B — Enterprise（推奨）';
+    t.textContent = 'Enterprise 営業ルートを推奨';
+    b.innerHTML = `
+      <p>ご回答内容（${formatAnswers('api', a)}）から、<strong>Enterprise 契約のメリットが Self-serve のリスクを上回る</strong>と判断される。Enterprise 営業ルートを前提とした準備が妥当。</p>
+      <p><strong>判定根拠：</strong></p>
+      <ul>${reasons.map(x => `<li>${x}</li>`).join('')}</ul>
+      <p><strong>推奨アクション：</strong></p>
+      <ul>
+        <li><strong>Enterprise 営業ルートを基本方針とする</strong>（<a href="https://claude.com/contact-sales" target="_blank" rel="noopener">claude.com/contact-sales</a> より問い合わせ） <span style="color: var(--text-sub); font-size: 13px;">（電話受付なし・フォーム経由のみ）</span></li>
+        <li>PoC は Self-serve にて<strong>並行実施可能</strong>（営業ルートのリードタイム活用）</li>
+        <li>商談において追加契約書・SLA・請求書払いの条件を順次確定</li>
+        ${alternativeRoute}
+      </ul>
+      <div class="result-cost">${costEstimate}</div>
+    `;
+  } else if (score >= 3) {
+    tag.textContent = '判定 C — Self-serve（移行準備あり）';
+    t.textContent = 'Self-serve で開始、Enterprise 移行準備';
+    b.innerHTML = `
+      <p>ご回答内容（${formatAnswers('api', a)}）から、<strong>当面は Self-serve で対応可能</strong>と判断される。ただし規模拡大・顧客要件の変化により Enterprise 切替が必要になる可能性がある。</p>
+      <p><strong>判定根拠：</strong></p>
+      <ul>${reasons.map(x => `<li>${x}</li>`).join('')}</ul>
+      <p><strong>推奨アクション：</strong></p>
+      <ul>
+        <li><a href="https://console.anthropic.com/" target="_blank" rel="noopener">console.anthropic.com</a> にて Self-serve 契約を開始</li>
+        <li>Tier 1 から Tier 4 まで段階的に昇格（本番投入前に Tier 4 到達を目標とする）</li>
+        <li>月額60万円を超過する見込みが立った時点で <a href="https://claude.com/contact-sales" target="_blank" rel="noopener">claude.com/contact-sales</a> へ問い合わせ <span style="color: var(--text-sub); font-size: 13px;">（電話受付なし・フォーム経由のみ）</span></li>
+        ${alternativeRoute}
+      </ul>
+      <div class="result-cost">${costEstimate}</div>
+    `;
+  } else {
+    tag.textContent = '判定 D — Self-serve';
+    t.textContent = 'Self-serve（Web）で対応可能';
+    b.innerHTML = `
+      <p>ご回答内容（${formatAnswers('api', a)}）から、<strong>Self-serve で十分対応可能</strong>と判断される。営業契約を経由せず即日利用を開始できる。</p>
+      <p><strong>判定根拠：</strong></p>
+      <ul>${reasons.map(x => `<li>${x}</li>`).join('')}</ul>
+      <p><strong>推奨アクション：</strong></p>
+      <ul>
+        <li><a href="https://console.anthropic.com/" target="_blank" rel="noopener">console.anthropic.com</a> にてアカウント作成（業務用メールアドレスを使用）</li>
+        <li>法人クレジットカード登録および初回 $5（750円）のクレジット購入で Tier 1 を起動</li>
+        <li>規模拡大・顧客要件の変化が生じた場合は <strong>Enterprise への切替が可能</strong></li>
+        ${alternativeRoute}
+      </ul>
+      <div class="result-cost">${costEstimate}</div>
+    `;
+  }
+}
+
+const APP_LABELS = {
+  1: { solo: '1〜4名', team: '5〜150名', large: '150名超' },
+  2: { no: 'Claude Code 利用なし', few: 'Claude Code 開発者1〜5名', many: 'Claude Code 開発者多数' },
+  3: { none: 'SSO不要', sso: 'SSO必要', scim: 'SCIM必要' },
+  4: { card: 'クレジットカード払い可', invoice: '請求書払い必須' },
+  5: { no: 'HIPAA/BAA不要', yes: 'HIPAA/BAA必要' },
+  6: { low: 'データ＝公開情報レベル', mid: 'データ＝業務情報', high: 'データ＝機密情報' },
+  7: { no: '監査ログ不要', basic: '基本ログで可', full: 'フル監査ログ必須' },
+  8: { now: '今すぐ導入', month: '1ヶ月以内', quarter: '2〜3ヶ月後で可' }
+};
+
+function showAppResult() {
+  const a = answers.app;
+  const r = document.getElementById('result-app');
+  const tag = document.getElementById('result-app-tag');
+  const t = document.getElementById('result-app-title');
+  const b = document.getElementById('result-app-body');
+  r.classList.add('show');
+
+  // 営業経由（sales-assisted Enterprise）でのみ対応できる要件
+  const salesReasons = [];
+  if (a[4] === 'invoice') salesReasons.push(`<strong>支払い＝請求書払い必須</strong>：請求書払いは sales-assisted Enterprise のみ（Team・Enterprise self-serve はクレカ/ACH）`);
+  if (a[5] === 'yes') salesReasons.push(`<strong>HIPAA＝必要</strong>：HIPAA-readiness・BAA 締結は営業経由でのみ提供`);
+
+  // Enterprise が必要だが Web（self-serve）で即日契約できる要件
+  const selfEntReasons = [];
+  if (a[3] === 'scim') selfEntReasons.push(`<strong>SCIM 必要</strong>：自動プロビジョニングは Enterprise の機能（self-serve でも対応）`);
+  if (a[7] === 'full') selfEntReasons.push(`<strong>フル監査ログ必要</strong>：監査ログ・Compliance API は Enterprise の機能（self-serve でも対応）`);
+  if (a[6] === 'high') selfEntReasons.push(`<strong>機密情報を扱う</strong>：カスタムデータ保持・Compliance API による統制は Enterprise が適切（self-serve でも対応）`);
+  if (a[1] === 'large') selfEntReasons.push(`<strong>人数＝150名超</strong>：Team プランの上限（150席）を超えるため Enterprise が必要`);
+
+  const softNotes = [];
+  if (a[6] === 'mid') softNotes.push(`業務情報を扱う：Team でもモデル学習不使用は保証される。監査・統制を厳格化したくなったら Enterprise を検討`);
+  if (a[7] === 'basic') softNotes.push(`基本ログ：Team プランの管理コンソールで利用者・期間の確認は可能`);
+  if (a[8] === 'now') softNotes.push(`早期導入希望：Team／Enterprise self-serve はいずれも Web 即日契約可。sales-assisted のみ最短2週間〜`);
+  if (a[8] === 'quarter') softNotes.push(`導入時期に余裕あり：sales-assisted Enterprise の法務レビュー期間（6〜12週間）にも十分な余裕がある`);
+
+  const needSales = salesReasons.length > 0;
+  const needSelfEnt = selfEntReasons.length > 0;
+  const tooSmall = (a[1] === 'solo');
+
+  // 席数・コスト推定
+  let estSeats = 10;
+  if (a[1] === 'large') estSeats = 150;
+  if (tooSmall) estSeats = 5;
+  let premiumCount = 0;
+  if (a[2] === 'few') premiumCount = Math.min(5, estSeats);
+  else if (a[2] === 'many') premiumCount = Math.floor(estSeats * 0.5);
+  let standardCount = Math.max(estSeats - premiumCount, 0);
+  const teamMonthly = (premiumCount * 15000) + (standardCount * 3000);
+  const entSeatMonthly = estSeats * 3000; // Enterprise: $20/席（年払い・3,000円）
+
+  if (needSales) {
+    tag.textContent = '判定 A — Enterprise（営業経由）';
+    t.textContent = 'Enterprise アプリ契約（sales-assisted・営業ルート）';
+    b.innerHTML = `
+      <p>ご回答内容（${formatAnswers('app', a)}）から、<strong>営業経由（sales-assisted）でのみ対応できる要件</strong>が含まれる。Web セルフサーブでは契約できないため営業窓口へ問い合わせる。</p>
+      <p><strong>営業経由が必須となる根拠：</strong></p>
+      <ul>${salesReasons.map(x => `<li>${x}</li>`).join('')}</ul>
+      ${needSelfEnt ? `<p><strong>併せて必要となる Enterprise 機能：</strong></p><ul>${selfEntReasons.map(x => `<li>${x}</li>`).join('')}</ul>` : ''}
+      ${softNotes.length ? `<p><strong>補足事項：</strong></p><ul>${softNotes.map(x => `<li>${x}</li>`).join('')}</ul>` : ''}
+      <p><strong>推奨アクション：</strong></p>
+      <ul>
+        <li><a href="https://claude.com/contact-sales" target="_blank" rel="noopener">claude.com/contact-sales</a> より問い合わせを送付 <span style="color: var(--text-sub); font-size: 13px;">（電話受付なし・フォーム経由のみ）</span></li>
+        <li>席数（${estSeats}席想定）および必要機能（${a[4] === 'invoice' ? '請求書払い / ' : ''}${a[5] === 'yes' ? 'HIPAA・BAA / ' : ''}${a[3] === 'scim' ? 'SCIM / ' : ''}${a[7] === 'full' ? '監査ログ / ' : ''}その他基本要件）を要件として明記</li>
+        <li>商談 → MSA レビュー → 契約締結（最短2〜4週間、法務レビュー込みで6〜12週間）</li>
+        ${a[8] === 'now' ? '<li>※ 早期導入が必要な場合、sales-assisted はリードタイム不足。暫定措置として Team プラン5席で開始する選択肢も検討すること</li>' : ''}
+      </ul>
+      <div class="result-cost">席単価 月3,000円〜（$20/席・年払い）＋ API 従量課金。コミット割引・カスタム条件は商談で交渉</div>
+    `;
+  } else if (needSelfEnt) {
+    tag.textContent = '判定 B — Enterprise（Web即日）';
+    t.textContent = 'Enterprise アプリ契約（self-serve・Web即日）';
+    b.innerHTML = `
+      <p>ご回答内容（${formatAnswers('app', a)}）から、<strong>Team を超える Enterprise 機能が必要</strong>だが、<strong>営業を介さず Web から即日契約できる</strong>（2026年2月以降の Enterprise self-serve）。</p>
+      <p><strong>Enterprise が必要となる根拠：</strong></p>
+      <ul>${selfEntReasons.map(x => `<li>${x}</li>`).join('')}</ul>
+      ${softNotes.length ? `<p><strong>補足事項：</strong></p><ul>${softNotes.map(x => `<li>${x}</li>`).join('')}</ul>` : ''}
+      <p><strong>推奨アクション：</strong></p>
+      <ul>
+        <li><a href="https://claude.com/pricing/enterprise" target="_blank" rel="noopener">claude.com/pricing</a> から Enterprise（self-serve）を Web 契約</li>
+        <li>SSO・SCIM・監査ログ・Compliance API・カスタムデータ保持を管理画面で設定</li>
+        <li>支払いはクレジットカード／ACH（年払い）。<strong>請求書払いが必要なら sales-assisted（判定A）へ</strong></li>
+        <li>席種を決定：開発者は Claude Code 込みの席、その他は標準席</li>
+      </ul>
+      <div class="result-cost">席単価 月3,000円（$20/席・年払い）＋ API 従量課金。想定 ${estSeats}席なら席料のみ月${entSeatMonthly.toLocaleString()}円＋使用量</div>
+    `;
+  } else if (tooSmall) {
+    tag.textContent = '判定 C — 最低契約席数に未到達';
+    t.textContent = 'Team プランの最低契約席数（5席）に未到達';
+    b.innerHTML = `
+      <p>ご回答内容（${formatAnswers('app', a)}）から、<strong>利用者数が4名以下</strong>と判断される。Team プランは最低5席からの契約となるため、選択肢の再検討が必要。</p>
+      <p><strong>状況：</strong></p>
+      <ul>
+        <li><strong>Team プランは最低5席からの契約</strong>。1〜4名では契約不可</li>
+        <li>Team プラン契約時は <strong>5席分の課金</strong>が発生する</li>
+      </ul>
+      <p><strong>選択肢：</strong></p>
+      <ul>
+        <li><strong>個人プラン（Pro / Max）を人数分契約</strong>：Pro 月2,550円〜（年払い $17）／Max 月15,000円〜。法人カード払い可。<strong>ただし管理機能は提供されず、モデル訓練不使用は保証されるものの個人プラン規約が適用される</strong></li>
+        <li><strong>Team プランで最低5席契約</strong>：今後の人員拡大が見込まれる場合は本選択肢を推奨。余剰席は予約席として確保可能</li>
+        ${a[2] !== 'no' ? '<li>Claude Code を使用する場合、Pro/Max にも Claude Code は含まれるが、チーム管理が必要なら Team Premium が妥当</li>' : ''}
+      </ul>
+      ${softNotes.length ? `<p><strong>補足事項：</strong></p><ul>${softNotes.map(x => `<li>${x}</li>`).join('')}</ul>` : ''}
+      <div class="result-cost">個人Pro 月2,550円 × N人（1〜4名分）／ Team月27,000円〜（最低5席・年払い20%off適用後）</div>
+    `;
+  } else {
+    tag.textContent = '判定 D — Team プラン';
+    t.textContent = 'Team プラン（セルフサーブで即日契約可能）';
+    b.innerHTML = `
+      <p>ご回答内容（${formatAnswers('app', a)}）から、<strong>Team プランで十分対応可能</strong>と判断される。セルフサーブにて即日契約・利用開始が可能。</p>
+      <p><strong>判定根拠：</strong></p>
+      <ul>
+        <li><strong>人数＝${APP_LABELS[1][a[1]]}</strong>：Team プランの想定範囲内（5〜150名）</li>
+        <li><strong>支払い＝クレジットカード可</strong>：Team プランの基本支払い方式と一致</li>
+        <li><strong>SCIM・監査ログ・請求書払い・HIPAA＝不要</strong>：Enterprise 限定要件は不要</li>
+        ${a[3] === 'sso' ? '<li>SSO は Team プランでも対応可能（Google Workspace / Azure AD / Okta 等）</li>' : ''}
+        ${a[6] === 'mid' ? '<li>業務情報を扱うが、Team プランにおいてもモデル訓練への不使用は契約上保証される</li>' : ''}
+      </ul>
+      ${softNotes.length ? `<p><strong>補足事項：</strong></p><ul>${softNotes.map(x => `<li>${x}</li>`).join('')}</ul>` : ''}
+      <p><strong>推奨アクション：</strong></p>
+      <ul>
+        <li><a href="https://claude.ai/" target="_blank" rel="noopener">claude.ai</a> にてアカウント作成 → Settings → Team → "Upgrade to Team"</li>
+        <li>席種を決定する：Claude Code を使用する開発者には <strong>Premium 席</strong>、その他の利用者には <strong>Standard 席</strong></li>
+        <li>本回答に基づく想定構成：<strong>Premium ${premiumCount}席 ＋ Standard ${standardCount}席</strong>（合計${premiumCount+standardCount}席）</li>
+        <li>法人カード登録 → メンバー招待にて即日開始</li>
+        <li>将来的に SCIM・監査ログ・請求書払いが必要となった時点で Enterprise へ移行</li>
+      </ul>
+      <div class="result-cost">月額${teamMonthly.toLocaleString()}円（年払い20%off適用後）／年額${(teamMonthly*12).toLocaleString()}円</div>
+    `;
+  }
+}
+
+function formatAnswers(type, a) {
+  const labels = type === 'api' ? API_LABELS : APP_LABELS;
+  return [1,2,3,4,5,6,7,8].map(n => labels[n][a[n]]).filter(x => x).join(' / ');
+}
+</script>
+
+<div class="sources">
+<span class="sources-label">出典 / Sources</span>
+<ul>
+  <li><a href="https://claude.com/pricing/" target="_blank" rel="noopener">claude.com/pricing</a> — 判定の基礎となるプラン・機能・支払い条件</li>
+  <li><a href="https://claude.com/blog/self-serve-enterprise" target="_blank" rel="noopener">claude.com/blog — Claude Enterprise, now available self-serve（2026-02-12）</a> — Enterprise self-serve の追加</li>
+  <li><span class="src-note">※ 判定ロジック（スコアリング・分岐）は上記一次情報をもとに本資料が独自構成した目安であり、Anthropic 公式の判定ではない</span></li>
+</ul>
+</div>
+</section>
+
+<section id="basics">
+<h2><span class="sec-num">§03</span>そもそも Claude の契約構造</h2>
+
+<p>Claude を法人利用する場合、契約は<strong>「API契約」と「アプリ契約」の2階建て構造</strong>となる。両方を利用する場合は、それぞれ個別に契約を締結する必要がある。</p>
+
+<ul>
+  <li><strong>API契約</strong>：プログラムから Claude を呼び出し、自社製品に組み込む形態</li>
+  <li><strong>アプリ契約</strong>：従業員が Claude.ai／Claude Code を直接利用する形態</li>
+  <li><strong>請求・ユーザー管理・料金体系は完全に独立</strong>（同一の Anthropic アカウント内でも別管理）</li>
+</ul>
+
+<div class="figure">
+<svg viewBox="0 0 1000 340" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Claude 契約の2階建て構造図">
+  <defs>
+    <marker id="ar" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <polygon points="0 0, 8 4, 0 8" fill="#1a1a1f"/>
+    </marker>
+  </defs>
+
+  <!-- App side -->
+  <line x1="40" y1="40" x2="40" y2="320" stroke="#d97757" stroke-width="3"/>
+  <text x="60" y="56" font-family="JetBrains Mono, monospace" font-size="11" fill="#b85d3f" letter-spacing="2">A</text>
+  <text x="60" y="82" font-size="18" font-weight="700" fill="#1a1a1f">アプリ契約</text>
+  <text x="60" y="104" font-size="12" fill="#5a5a62">社員が Claude.ai／Claude Code を直接利用</text>
+
+  <!-- App users -->
+  <circle cx="80" cy="160" r="14" fill="#d97757"/>
+  <text x="80" y="165" text-anchor="middle" font-size="11" fill="#fff" font-weight="700">開</text>
+  <text x="80" y="195" text-anchor="middle" font-size="10" fill="#5a5a62">開発者</text>
+  <text x="80" y="208" text-anchor="middle" font-size="10" fill="#b85d3f" font-weight="700">Premium</text>
+
+  <circle cx="140" cy="160" r="10" fill="#d97757" opacity="0.4"/>
+  <circle cx="170" cy="160" r="10" fill="#d97757" opacity="0.4"/>
+  <circle cx="200" cy="160" r="10" fill="#d97757" opacity="0.4"/>
+  <circle cx="230" cy="160" r="10" fill="#d97757" opacity="0.4"/>
+  <text x="185" y="195" text-anchor="middle" font-size="10" fill="#5a5a62">利用者</text>
+  <text x="185" y="208" text-anchor="middle" font-size="10" fill="#b85d3f" font-weight="700">Standard</text>
+
+  <!-- App contract box -->
+  <line x1="60" y1="240" x2="450" y2="240" stroke="#d8d4cc" stroke-width="1"/>
+  <text x="60" y="262" font-family="JetBrains Mono, monospace" font-size="10" fill="#5a5a62" letter-spacing="1">CONTRACT</text>
+  <text x="60" y="282" font-size="13" font-weight="700" fill="#1a1a1f">Team ／ Enterprise プラン</text>
+  <text x="60" y="300" font-size="11" fill="#5a5a62">Web即日（Team・Ent self-serve）／ 営業（Ent sales）</text>
+  <text x="60" y="316" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700" fill="#b85d3f">Team は月 27,000 JPY 〜（5席・年払い）</text>
+
+  <!-- Divider -->
+  <line x1="500" y1="40" x2="500" y2="320" stroke="#d8d4cc" stroke-width="1" stroke-dasharray="3,3"/>
+
+  <!-- API side -->
+  <line x1="520" y1="40" x2="520" y2="320" stroke="#d97757" stroke-width="3"/>
+  <text x="540" y="56" font-family="JetBrains Mono, monospace" font-size="11" fill="#b85d3f" letter-spacing="2">B</text>
+  <text x="540" y="82" font-size="18" font-weight="700" fill="#1a1a1f">API契約</text>
+  <text x="540" y="104" font-size="12" fill="#5a5a62">プログラムから Claude を呼び出す</text>
+
+  <!-- API flow -->
+  <rect x="540" y="140" width="100" height="48" fill="#fff" stroke="#1a1a1f" stroke-width="1"/>
+  <text x="590" y="166" text-anchor="middle" font-size="12" font-weight="700" fill="#1a1a1f">顧客</text>
+  <text x="590" y="180" text-anchor="middle" font-size="10" fill="#5a5a62">エンドユーザー</text>
+
+  <path d="M 644 164 L 668 164" stroke="#1a1a1f" stroke-width="1.5" fill="none" marker-end="url(#ar)"/>
+
+  <rect x="670" y="140" width="100" height="48" fill="#fff" stroke="#1a1a1f" stroke-width="1"/>
+  <text x="720" y="166" text-anchor="middle" font-size="12" font-weight="700" fill="#1a1a1f">自社</text>
+  <text x="720" y="180" text-anchor="middle" font-size="10" fill="#5a5a62">商品・サービス</text>
+
+  <path d="M 774 164 L 798 164" stroke="#1a1a1f" stroke-width="1.5" fill="none" marker-end="url(#ar)"/>
+
+  <rect x="800" y="140" width="100" height="48" fill="#fff" stroke="#1a1a1f" stroke-width="1"/>
+  <text x="850" y="166" text-anchor="middle" font-size="12" font-weight="700" fill="#1a1a1f">Claude</text>
+  <text x="850" y="180" text-anchor="middle" font-size="10" fill="#5a5a62">API</text>
+
+  <!-- API contract box -->
+  <line x1="540" y1="240" x2="930" y2="240" stroke="#d8d4cc" stroke-width="1"/>
+  <text x="540" y="262" font-family="JetBrains Mono, monospace" font-size="10" fill="#5a5a62" letter-spacing="1">CONTRACT</text>
+  <text x="540" y="282" font-size="13" font-weight="700" fill="#1a1a1f">Self-serve または Enterprise</text>
+  <text x="540" y="300" font-size="11" fill="#5a5a62">用途・顧客要件で選定が変わる</text>
+  <text x="540" y="316" font-family="JetBrains Mono, monospace" font-size="11" font-weight="700" fill="#b85d3f">従量課金（使った分のみ）</text>
+</svg>
+<p class="figure-cap">図1 Claude 契約の2階建て構造</p>
+</div>
+
+<div class="sources">
+<span class="sources-label">出典 / Sources</span>
+<ul>
+  <li><a href="https://claude.com/pricing/" target="_blank" rel="noopener">claude.com/pricing</a> — アプリ契約とAPI契約の区分・プラン構成</li>
+  <li><a href="https://www.anthropic.com/legal/commercial-terms" target="_blank" rel="noopener">anthropic.com/legal/commercial-terms</a> — 契約主体・課金・利用条件</li>
+</ul>
+</div>
+</section>
+
+<section id="app-detail">
+<h2><span class="sec-num">§04</span>アプリ契約の詳細</h2>
+
+<h3>Team プランの席種</h3>
+<p>Team プランには<strong>2種類の席種</strong>が存在し、利用者の用途に応じて割り当てる。</p>
+
+<div class="col-2">
+  <div class="panel">
+    <h4>Standard 席（チャット用）</h4>
+    <ul>
+      <li>Claude.ai（ブラウザ経由のチャット）</li>
+      <li>Projects（チーム共有可能なAI）</li>
+      <li>コネクター（Google Drive 等）</li>
+      <li>Claude Code は利用不可</li>
+    </ul>
+    <p class="panel-note">→ 営業・マーケティング・人事・経理など、開発業務を行わない部門向け</p>
+    <div class="result-cost">月 3,750 JPY（年払いで 3,000 JPY）</div>
+  </div>
+  <div class="panel">
+    <h4>Premium 席（開発者向け）</h4>
+    <ul>
+      <li>Standard で提供される全機能</li>
+      <li><strong>Claude Code 利用可</strong>（コード生成・編集・実行）</li>
+      <li>より多い利用量上限</li>
+    </ul>
+    <p class="panel-note">→ エンジニア・開発者向け</p>
+    <div class="result-cost">月 18,750 JPY（年払いで 15,000 JPY）</div>
+  </div>
+</div>
+
+<h3>5席構成（最低契約）のコスト試算</h3>
+<p>想定構成：開発者1名（Premium）＋一般利用者4名（Standard）の合計5席。</p>
+
+<table>
+<thead>
+<tr><th>支払い方式</th><th class="num">月額</th><th class="num">年額</th></tr>
+</thead>
+<tbody>
+<tr><td>月払い</td><td class="num">33,750 JPY</td><td class="num">405,000 JPY</td></tr>
+<tr><td>年払い（20% off）</td><td class="num"><strong>27,000 JPY</strong></td><td class="num"><strong>324,000 JPY</strong></td></tr>
+</tbody>
+</table>
+
+<h3>Team プランの基本仕様</h3>
+<ul>
+  <li><strong>5〜150席</strong>の範囲で契約可（最低5席、上限150席）</li>
+  <li>支払い方式：クレジットカードのみ（請求書払い不可）</li>
+  <li>SSO：基本対応（Google Workspace / Azure AD 等）</li>
+  <li>SCIM：不可（必要なら Enterprise）</li>
+  <li>監査ログ・Compliance API：不可（必要なら Enterprise）</li>
+  <li>HIPAA/BAA：不可（必要なら Enterprise sales-assisted）</li>
+  <li>適格請求書発行（登録番号 T7700150134388・消費税10%別途）</li>
+</ul>
+
+<h3>Enterprise アプリ契約は2形態（2026年2月〜）</h3>
+<p>従来 Enterprise は営業経由のみだったが、2026年2月以降は <strong>Web から即日契約できる self-serve 形態</strong> が追加された。SCIM・監査ログ・Compliance API といった主要なセキュリティ機能は <strong>self-serve でも利用できる</strong>。営業（sales-assisted）が必須となるのは請求書払い等の一部のみ。</p>
+
+<div class="col-2">
+  <div class="panel">
+    <h4>Enterprise（self-serve・Web即日）</h4>
+    <ul>
+      <li>Web から即日契約・SSO設定・メンバー招待が可能</li>
+      <li>SCIM 自動プロビジョニング</li>
+      <li>監査ログ・Compliance API</li>
+      <li>カスタムデータ保持・ロールベースアクセス</li>
+      <li>支払い：クレジットカード／ACH（年払い）</li>
+    </ul>
+    <p class="panel-note">→ SCIM・監査ログは欲しいが、クレカ払いで標準条件なら最速ルート</p>
+    <div class="result-cost">席単価 月3,000円（$20/席・年払い）＋ API 従量課金</div>
+  </div>
+  <div class="panel">
+    <h4>Enterprise（sales-assisted・営業経由）</h4>
+    <ul>
+      <li>self-serve の全機能に加え：</li>
+      <li><strong>請求書払い / net terms</strong></li>
+      <li><strong>MSA・PO・非標準契約条件</strong></li>
+      <li>コミット枠による割引・トライアル</li>
+      <li>HIPAA-readiness・専任サポート・AWS Marketplace 購入</li>
+    </ul>
+    <p class="panel-note">→ 請求書払い・カスタム契約・HIPAA が必要なケース</p>
+    <div class="result-cost">席単価＋API 従量課金。割引・条件は商談で個別交渉</div>
+  </div>
+</div>
+
+<div class="callout warn">
+<span class="label">営業（sales-assisted）が"本当に"必要な条件</span>
+<ul>
+  <li>請求書払い（net terms）が経理要件で必須</li>
+  <li>MSA・PO・非標準契約条件が必要</li>
+  <li>HIPAA-readiness・BAA 締結が必要</li>
+  <li>コミット枠割引・トライアル・AWS Marketplace 購入を希望</li>
+</ul>
+上記に該当しなければ、SCIM・監査ログが必要でも <strong>Enterprise self-serve（Web即日）</strong> で完結する。さらに SCIM・監査ログも不要で 5〜150名・クレカ払いなら <strong>Team プラン</strong> で十分。
+</div>
+
+<div class="sources">
+<span class="sources-label">出典 / Sources</span>
+<ul>
+  <li><a href="https://claude.com/pricing/" target="_blank" rel="noopener">claude.com/pricing</a> — Team/Enterprise の席種・料金・機能比較（5〜150席、$20/席等）</li>
+  <li><a href="https://claude.com/blog/self-serve-enterprise" target="_blank" rel="noopener">claude.com/blog — Claude Enterprise, now available self-serve</a> — self-serve / sales-assisted の機能差</li>
+  <li><a href="https://support.claude.com/en/articles/13393991-purchase-and-manage-seats-on-enterprise-plans" target="_blank" rel="noopener">support.claude.com — Purchase and manage seats on Enterprise plans</a> — 席管理・seat minimum・課金</li>
+  <li><a href="https://ai.zenken.co.jp/post/claude-billing-guide/" target="_blank" rel="noopener">ai.zenken.co.jp — Claude 支払い・インボイス対応</a> — 適格請求書番号 T7700150134388・消費税（二次情報）</li>
+</ul>
+</div>
+</section>
+
+<section id="api-detail">
+<h2><span class="sec-num">§05</span>API契約の詳細</h2>
+
+<h3>API契約の2つのルート</h3>
+<div class="col-2">
+  <div class="panel">
+    <h4>Self-serve（Web経由）</h4>
+    <ul>
+      <li>即日利用開始可能</li>
+      <li>クレジットカード払い・従量課金</li>
+      <li>段階的 Tier 昇格（後述）</li>
+      <li>SLA 保証なし・ZDR 不可・BAA 不可</li>
+    </ul>
+    <p class="panel-note">→ 社内専用・PoC・小規模利用向け</p>
+  </div>
+  <div class="panel">
+    <h4>Enterprise（営業ルート）</h4>
+    <ul>
+      <li>契約締結まで 2〜12週間</li>
+      <li>請求書払い・コミット枠による割引</li>
+      <li>SLA 数値保証・ZDR・BAA 締結可能</li>
+      <li>カスタム条件・専任サポート</li>
+    </ul>
+    <p class="panel-note">→ 外販組込・大規模・規制業種向け</p>
+  </div>
+</div>
+
+<h3>Self-serve の Tier 制度</h3>
+<p>Self-serve では<strong>累計クレジット購入額に応じて Tier が自動的に昇格</strong>する仕様。契約初期に大量利用することはできない。</p>
+
+<table>
+<thead>
+<tr><th>Tier</th><th class="num">必要な累計購入額</th><th class="num">月の利用上限</th><th>用途イメージ</th></tr>
+</thead>
+<tbody>
+<tr><td><strong>Tier 1</strong></td><td class="num">750 JPY</td><td class="num">15,000 JPY</td><td>初回起動・PoC</td></tr>
+<tr><td><strong>Tier 2</strong></td><td class="num">6,000 JPY</td><td class="num">75,000 JPY</td><td>本格検証</td></tr>
+<tr><td><strong>Tier 3</strong></td><td class="num">30,000 JPY</td><td class="num">150,000 JPY</td><td>小規模本番</td></tr>
+<tr><td><strong>Tier 4</strong></td><td class="num">60,000 JPY</td><td class="num">750,000 JPY</td><td>中規模本番の標準</td></tr>
+<tr><td><strong>Tier 4超</strong></td><td colspan="3">営業経由で個別交渉が必要</td></tr>
+</tbody>
+</table>
+
+<div class="callout info">
+<span class="label">Tier 昇格の運用ポイント</span>
+<ul>
+  <li>本番投入前に Tier 4 への昇格を完了させるのが定石</li>
+  <li>社内検証期間中にクレジットの少額購入を継続的に実施し、段階的に昇格させる</li>
+  <li>本番リリース時点で Tier 1（月15,000円上限）の場合、レートリミット超過によりサービス停止のリスクあり</li>
+</ul>
+</div>
+
+<h3>商用組込に関する規約</h3>
+<p>Anthropic の公式契約書（Commercial Terms）にて<strong>商用組込は明示的に許可</strong>されている。</p>
+
+<div class="col-2">
+  <div class="callout ok">
+    <span class="label">許可される用途</span>
+    <blockquote>"Services may power products and services made available to your own customers and end users"<cite>— Anthropic Commercial Terms</cite></blockquote>
+    <ul>
+      <li>自社商品に Claude API を組み込み、他社へ提供する</li>
+      <li>顧客のエンドユーザーがチャット欄に自由入力する形態</li>
+      <li>システムプロンプトを自社で設計し、API応答を顧客の画面に表示する</li>
+    </ul>
+  </div>
+  <div class="callout ng">
+    <span class="label">禁止される用途（規約違反）</span>
+    <ul>
+      <li>自社の APIキーを顧客に渡して、顧客が直接 Anthropic にアクセスする形態</li>
+      <li>単純な APIプロキシ製品（APIを薄くラップしただけのもの）としての再販</li>
+      <li>Claude の出力を用いた他のAIモデルの訓練</li>
+      <li>Claude Pro/Max（個人サブスクリプション）のログインを第三者に利用させる行為</li>
+    </ul>
+  </div>
+</div>
+
+<h3>自社側の責任</h3>
+<table>
+<thead>
+<tr><th>項目</th><th>説明</th><th>対策</th></tr>
+</thead>
+<tbody>
+<tr>
+  <td><strong>Usage Policy 遵守</strong></td>
+  <td>エンドユーザーによる規約違反入力が発生した場合でも、APIキー所有者（自社）が責任を負う</td>
+  <td>入力フィルタ層およびシステムプロンプトにて制限を明記</td>
+</tr>
+<tr>
+  <td><strong>High-Risk Use Case</strong></td>
+  <td>B2C における法律／金融／雇用用途は追加要件の対象（B2Bは対象外）</td>
+  <td>Human-in-the-loop による人間レビュー ＋ AI使用の明示</td>
+</tr>
+<tr>
+  <td><strong>データ保持に関する顧客への説明</strong></td>
+  <td>標準では Anthropic 側で30日間保持される旨を顧客に説明する義務がある</td>
+  <td>顧客契約書への明記、または ZDR 契約による保持期間ゼロ化</td>
+</tr>
+</tbody>
+</table>
+
+<div class="sources">
+<span class="sources-label">出典 / Sources</span>
+<ul>
+  <li><a href="https://claude.com/pricing/" target="_blank" rel="noopener">claude.com/pricing</a> — API トークン単価・Self-serve / Enterprise の区分</li>
+  <li><a href="https://platform.claude.com/docs/en/manage-claude/api-and-data-retention" target="_blank" rel="noopener">platform.claude.com — API and data retention</a> — データ保持期間・ZDR の適用範囲</li>
+  <li><a href="https://www.anthropic.com/legal/commercial-terms" target="_blank" rel="noopener">anthropic.com/legal/commercial-terms</a> — 商用組込の許可範囲（"Services may power products..."）</li>
+  <li><a href="https://www.anthropic.com/news/usage-policy-update" target="_blank" rel="noopener">anthropic.com/news — Usage Policy update</a> — High-Risk Use Case Requirements（B2C 法律/金融/雇用）</li>
+  <li><a href="https://miraitranslate-tech.hatenablog.jp/entry/claude-api-organization-setup" target="_blank" rel="noopener">miraitranslate-tech.hatenablog.jp — Claude API 組織導入</a> — Tier 制度・段階昇格の実運用例（二次情報）</li>
+  <li><span class="src-note">※ コミット枠割引率（10〜36%）はベンダー調査集計値（vendorbenchmark.com / vendr.com 等）に基づく参考値であり、Anthropic 公式の公開値ではない</span></li>
+</ul>
+</div>
+</section>
+
+<section id="next">
+<h2><span class="sec-num">§06</span>次のアクション</h2>
+<p class="lead">判定ツールの結果に応じて、以下4つのフローのいずれかを順番に実施する。各 Step は <strong>「順番に上から」</strong> 実行することを前提とする。</p>
+
+<h3>フロー1：初動アクション（全員共通）</h3>
+<div class="flow">
+  <div class="flow-header">
+    <span class="flow-title">どの契約ルートを選ぶかを確定する</span>
+    <span class="flow-meta">所要時間 <strong>10〜20分</strong></span>
+  </div>
+  <ol class="flow-steps">
+    <li>
+      <span class="step-title">判定ツールで API／アプリ 双方を回答する</span>
+      <span class="step-desc">§02 の判定ツールで API側・アプリ側 両方のタブに回答し、推奨ルートを確認する。両方やることで全体像が見える。</span>
+      <span class="step-meta">所要 5〜10分</span>
+    </li>
+    <li>
+      <span class="step-title">不明用語を確認する</span>
+      <span class="step-desc">§01 の用語集を展開し、判定結果に出てくる単語（ZDR・SCIM・BAA・Tier 等）の意味を把握する。</span>
+      <span class="step-meta">所要 5分</span>
+    </li>
+    <li>
+      <span class="step-title">該当するフロー（2〜4）に進む</span>
+      <span class="step-desc">判定結果が <strong>Team プラン</strong> または <strong>Enterprise（self-serve・Web即日）</strong> ならフロー2、<strong>API Self-serve</strong> ならフロー3、<strong>Enterprise（営業経由＝請求書払い・HIPAA・API Enterprise 等）</strong> ならフロー4 へ進む。</span>
+    </li>
+  </ol>
+</div>
+
+<h3>フロー2：Webセルフサーブ契約（Team / Enterprise self-serve）</h3>
+<div class="callout info">
+<span class="label">Team か Enterprise self-serve か</span>
+SCIM・監査ログ・Compliance API が不要なら <strong>Team</strong>（手順は下記）。SCIM・監査ログが必要だが請求書払い・HIPAA は不要なら <strong>Enterprise self-serve</strong> を <a href="https://claude.com/pricing/enterprise" target="_blank" rel="noopener">claude.com/pricing</a> から同様に Web 即日契約する。どちらも営業を介さず即日で開始できる。
+</div>
+<div class="flow">
+  <div class="flow-header">
+    <span class="flow-title">claude.ai で即日契約・社員へ配布（Team プランの例）</span>
+    <span class="flow-meta">所要時間 <strong>30分〜1時間</strong>／ 即日利用開始可</span>
+  </div>
+  <ol class="flow-steps">
+    <li>
+      <span class="step-title">アカウント作成</span>
+      <span class="step-desc"><a href="https://claude.ai/" target="_blank" rel="noopener">claude.ai</a> にアクセスし、業務用メールアドレスでアカウントを作成する。</span>
+      <span class="step-meta">所要 5分</span>
+    </li>
+    <li>
+      <span class="step-title">Team プランへアップグレード</span>
+      <span class="step-desc">Settings → Team → "Upgrade to Team" を選択する。</span>
+      <span class="step-meta">所要 5分</span>
+    </li>
+    <li>
+      <span class="step-title">席数・席種の選定</span>
+      <span class="step-desc">最低5席から契約可。開発者には <strong>Premium 席</strong>、その他には <strong>Standard 席</strong> を割り当てる。</span>
+      <span class="step-meta">所要 10分</span>
+    </li>
+    <li>
+      <span class="step-title">法人カードで決済</span>
+      <span class="step-desc">クレジットカードを登録して決済する。請求書払いは Team プラン非対応のため必要なら フロー4 へ。</span>
+      <span class="step-meta">所要 5分</span>
+    </li>
+    <li>
+      <span class="step-title">メンバー招待</span>
+      <span class="step-desc">対象社員のメールアドレスを入力し招待を送信する。利用開始は招待受諾後すぐ。</span>
+      <span class="step-meta">所要 5〜10分</span>
+    </li>
+  </ol>
+</div>
+
+<h3>フロー3：API Self-serve 契約（API・Webセルフサーブ）</h3>
+<div class="flow">
+  <div class="flow-header">
+    <span class="flow-title">console.anthropic.com で即日 API 利用開始</span>
+    <span class="flow-meta">所要時間 <strong>30分〜1時間</strong>／ 即日利用開始可</span>
+  </div>
+  <ol class="flow-steps">
+    <li>
+      <span class="step-title">Console アカウント作成</span>
+      <span class="step-desc"><a href="https://console.anthropic.com/" target="_blank" rel="noopener">console.anthropic.com</a> にアクセスし、業務用メールアドレスでアカウントを作成する。</span>
+      <span class="step-meta">所要 5分</span>
+    </li>
+    <li>
+      <span class="step-title">Organization 情報の入力</span>
+      <span class="step-desc">Organization 名および <strong>法人番号（T+13桁）</strong> を入力する。後の適格請求書発行に必要。</span>
+      <span class="step-meta">所要 5分</span>
+    </li>
+    <li>
+      <span class="step-title">初回クレジット購入で Tier 1 起動</span>
+      <span class="step-desc">法人カードを登録し、$5（750円）相当のクレジットを購入する。これで Tier 1（月利用上限 15,000円）が起動する。</span>
+      <span class="step-meta">所要 5分</span>
+    </li>
+    <li>
+      <span class="step-title">APIキー発行・PoC 開始</span>
+      <span class="step-desc">Console から APIキーを発行し、開発・PoC 環境で利用を開始する。</span>
+      <span class="step-meta">所要 10〜20分</span>
+    </li>
+    <li>
+      <span class="step-title">段階的に Tier 4 まで昇格</span>
+      <span class="step-desc">本番投入前にクレジット追加購入（累計 60,000円）を行い、Tier 4（月利用上限 750,000円）まで段階的に昇格させる。</span>
+      <span class="step-meta">本番投入前に完了</span>
+    </li>
+  </ol>
+</div>
+
+<h3>フロー4：Enterprise 問い合わせ（API・アプリ共通／営業ルート）</h3>
+
+<div class="callout info">
+<span class="label">問い合わせ手段に関する補足</span>
+<p style="margin: 0 0 12px;"><strong>Anthropic Japan 合同会社（2025年10月開設）は実在する</strong>が、公式の電話・ライブチャット窓口は提供されていない（Anthropic Help Center 明記）。問い合わせは以下の3経路に限定される。</p>
+<ul>
+  <li><strong>主要：</strong> <a href="https://claude.com/contact-sales" target="_blank" rel="noopener">claude.com/contact-sales</a> のフォーム送信（新規 Enterprise 商談）</li>
+  <li><strong>メール：</strong> <a href="mailto:sales@anthropic.com">sales@anthropic.com</a>（営業向け補助連絡）／ <a href="mailto:support@anthropic.com">support@anthropic.com</a>（既存顧客サポート）</li>
+  <li><strong>サポートチャット：</strong> <a href="https://console.anthropic.com/" target="_blank" rel="noopener">console.anthropic.com</a> 右下の Fin（AIチャットボット・24時間対応・日本語入力可）</li>
+</ul>
+<p style="margin: 12px 0 0; font-size: 13px; color: var(--text-sub);">日本法人所在地：東京都千代田区丸の内1丁目8番2号 鉄鋼ビルディング 4F（代表執行役社長：東條英俊氏／法人番号 6010003047429）。今後営業電話窓口が公開される可能性はあるが、2026-06 時点ではフォーム経由が唯一の正規ルート。</p>
+</div>
+
+<div class="flow">
+  <div class="flow-header">
+    <span class="flow-title">フォーム送信から契約締結まで</span>
+    <span class="flow-meta">所要時間 <strong>最短 2〜4週間／ 法務込み 6〜12週間</strong></span>
+  </div>
+  <ol class="flow-steps">
+    <li>
+      <span class="step-title">問い合わせフォームへアクセス</span>
+      <span class="step-desc"><a href="https://claude.com/contact-sales" target="_blank" rel="noopener">claude.com/contact-sales</a> を開く。電話受付はないためフォーム経由のみ。</span>
+      <span class="step-meta">所要 5分</span>
+    </li>
+    <li>
+      <span class="step-title">必要情報の記入・送信</span>
+      <span class="step-desc">会社情報・想定月額利用・必須機能（請求書／SCIM／ZDR／BAA 等）を記入のうえ送信する。</span>
+      <span class="step-meta">所要 30分〜1時間</span>
+    </li>
+    <li>
+      <span class="step-title">Anthropic からの返信受領</span>
+      <span class="step-desc">1〜7営業日後に英文メールでの返信が届く。担当営業（Account Executive）がアサインされる。</span>
+      <span class="step-meta">1〜7営業日</span>
+    </li>
+    <li>
+      <span class="step-title">ディスカバリーコール</span>
+      <span class="step-desc">30分程度のオンライン商談。日本との時差により <strong>深夜帯</strong> となる可能性あり。要件・規模・希望時期を共有する。</span>
+      <span class="step-meta">所要 30分</span>
+    </li>
+    <li>
+      <span class="step-title">Security Questionnaire 回答</span>
+      <span class="step-desc">Anthropic からセキュリティ調査票が送付される。情シス・セキュリティ部門と連携して回答する。</span>
+      <span class="step-meta">所要 1〜2週間</span>
+    </li>
+    <li>
+      <span class="step-title">見積もり受領・条件交渉</span>
+      <span class="step-desc">コミット枠・割引率・SLA 数値・追加契約書（BAA/ZDR/DPA）の有無を交渉する。</span>
+      <span class="step-meta">所要 1〜2週間</span>
+    </li>
+    <li>
+      <span class="step-title">社内法務レビュー</span>
+      <span class="step-desc">米国法人との英文契約となるため、自社法務部の確認が必要。大企業では本フェーズが最長。</span>
+      <span class="step-meta">所要 2〜8週間</span>
+    </li>
+    <li>
+      <span class="step-title">契約締結・運用開始</span>
+      <span class="step-desc">DocuSign 等で電子署名。請求書払い設定・SSO/SCIM 設定・ZDR 個別有効化を実施し、本番利用開始。</span>
+      <span class="step-meta">所要 1週間</span>
+    </li>
+  </ol>
+</div>
+
+<div class="sources">
+<span class="sources-label">出典 / Sources</span>
+<ul>
+  <li><a href="https://claude.com/contact-sales" target="_blank" rel="noopener">claude.com/contact-sales</a> — 営業問い合わせフォーム（唯一の正規ルート）</li>
+  <li><a href="https://support.claude.com/ja/articles/9015913-%E3%82%B5%E3%83%9D%E3%83%BC%E3%83%88%E3%82%92%E5%8F%97%E3%81%91%E3%82%8B%E6%96%B9%E6%B3%95" target="_blank" rel="noopener">support.claude.com — サポートを受ける方法</a> — 電話・ライブチャット非提供／Fin チャット経路</li>
+  <li><a href="https://prtimes.jp/main/html/rd/p/000000001.000171496.html" target="_blank" rel="noopener">prtimes.jp — Anthropic 東京オフィス開設（2025-10-29）</a> — 日本法人の所在地・代表者</li>
+  <li><a href="https://www.houjin.info/detail/6010003047429/" target="_blank" rel="noopener">houjin.info — Anthropic Japan 合同会社</a> — 法人番号・登記情報（二次情報）</li>
+</ul>
+</div>
+</section>
+
+<div class="footer">
+<p>本資料は社内検討・稟議用途の要約資料である。契約条項・料金等の最新情報については、Anthropic 公式の規約および営業窓口にて必ず確認すること。</p>
+<p>為替レート 1 USD = 150 JPY で換算（2026-06-15時点）</p>
+<p>情報ソース Anthropic 公式（Commercial Terms／Usage Policy／Help Center）／ベンダー調査集計値／日本企業の導入実例</p>
+<p>詳細版 <code>Claude_API_Enterprise契約_営業窓口実務ガイド.html</code> を参照のこと</p>
+</div>
+
+</div>
+</body>
+</html>
